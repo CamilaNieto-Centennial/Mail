@@ -32,6 +32,50 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+
+  fetch(`/emails/${mailbox}`)
+    .then(response => response.json())
+    .then(emails => {
+      // Print emails
+      console.log(emails);
+
+      // Create div for each email
+      emails.forEach(email => {
+        console.log(email)
+        let newEmail = document.createElement('div');
+
+        // If email is unread set background to white, else to gray
+        if (email.read === false) {
+          newEmail.className = 'alert alert-light';
+        }
+        else {
+          newEmail.className = 'alert alert-dark';
+        }
+        
+        // Personalized styles
+        newEmail.style.color = 'black';
+        newEmail.style.borderColor = 'black';
+        newEmail.style.borderWidth = '2px';
+
+        // Contents of the div
+        newEmail.innerHTML = 
+        `<h5 style="color: Navy">${email.sender}</h5>
+         <p><strong>${email.subject}</strong></p>
+         <p>${email.timestamp}</p>
+          `
+
+        // Click event to check the new email
+        newEmail.addEventListener('click', function() {
+            console.log('This element has been clicked!')
+        });
+        
+        document.querySelector('#emails-view').append(newEmail);
+      });
+
+      
+
+    });
 }
 
 // Send Email from 'Compose' page
@@ -47,21 +91,26 @@ function send_email(event) {
   fetch('/emails', {
     method: 'POST',
     body: JSON.stringify({
-        recipients: recipients,
-        subject: subject,
-        body: body
+      recipients: recipients,
+      subject: subject,
+      body: body
     })
   })
-  .then(response => response.json())
-  .then(result => {
+    .then(response => response.json())
+    .then(result => {
       // Print result
       console.log(result);
 
       // Redirect to the sent page
       load_mailbox('sent')
-  });
+    });
 
   console.log(recipients);
   console.log(subject);
   console.log(body);
+}
+
+// 
+function a() {
+
 }
