@@ -16,6 +16,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-content').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -29,6 +30,7 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#email-content').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -52,24 +54,52 @@ function load_mailbox(mailbox) {
         else {
           newEmail.className = 'alert alert-dark';
         }
-        
+
         // Personalized styles
         newEmail.style.color = 'black';
         newEmail.style.borderColor = 'black';
         newEmail.style.borderWidth = '2px';
 
         // Contents of the div
-        newEmail.innerHTML = 
-        `<h5 style="color: Navy">${email.sender}</h5>
+        newEmail.innerHTML =
+          `<h5 style="color: Navy">${email.sender}</h5>
          <p><strong>${email.subject}</strong></p>
          <p>${email.timestamp}</p>
           `
 
         // Click event to check the new email
-        newEmail.addEventListener('click', function() {
-            console.log('This element has been clicked!')
+        newEmail.addEventListener('click', function () {
+          //console.log('This element has been clicked!')
+          fetch(`/emails/${email.id}`)
+            .then(response => response.json())
+            .then(email => {
+              // Print email
+              console.log(email);
+
+              // Get values of that new email
+              let sender = email.sender;
+              let recipients = email.recipients;
+              let subject = email.subject;
+              let timestamp = email.timestamp;
+              let body = email.body;
+
+              // Display on the page those values
+              single_email(sender, recipients, subject, timestamp, body);
+
+              // Set 'read' property to true, after user clicked the email
+              if(email.read === false) {
+                fetch(`/emails/${email.id}`, {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                      read: true
+                  })
+                })
+              }
+              
+              
+            });
         });
-        
+
         document.querySelector('#emails-view').append(newEmail);
       });
 
@@ -110,7 +140,17 @@ function send_email(event) {
   console.log(body);
 }
 
-// 
-function a() {
+// View Email Feature
+function single_email(sender, recipients, subject, timestamp, body) {
+  // Show email content and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#email-content').style.display = 'block';
 
+  // Initialize ids' to values of: sender, recipients, subject, timestamp, and body
+  document.querySelector('#email-sender').textContent = sender;
+  document.querySelector('#email-recipients').textContent = recipients;
+  document.querySelector('#email-subject').textContent = subject;
+  document.querySelector('#email-timestamp').textContent = timestamp;
+  document.querySelector('#email-body').textContent = body;
 }
