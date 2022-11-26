@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#compose').addEventListener('click', () => compose_email('New Email'));
 
   document.querySelector('#compose-form').addEventListener('submit', send_email);
 
@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', function () {
   load_mailbox('inbox');
 });
 
-function compose_email() {
+
+function compose_email(section, email) {
+  document.querySelector('#section').innerHTML = section;
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -23,7 +25,21 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+  if(section === "Reply") {
+    console.log("body from Compose: " + email.body);
+    document.querySelector('#compose-recipients').value = email.sender;
+    let topic = email.subject;
+    // If topic didn't start with 'Re:', then display it at the beggining
+    if(topic.split(' ', 1)[0] != 'Re:') {
+      topic = 'Re: ' + topic;
+    }
+    document.querySelector('#compose-subject').value = topic;
+    document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote: ${email.body}`;
+  }
 }
+
+
 
 function load_mailbox(mailbox) {
 
@@ -183,11 +199,22 @@ function load_mailbox(mailbox) {
               button.addEventListener('click', function () {
                 console.log('This button has been clicked!')
               });
-              document.querySelector('#container').append(button);
 
+              
+              // If Reply button is clicked, then call the compose form...
+              let replyButton = document.querySelector('#email-replyButton');
+              replyButton.addEventListener('click', function() {
+                console.log('Reply button has been clicked!')
+                compose_email("Reply", email);
+              });
 
             });
         });
+
+        
+
+
+
 
         document.querySelector('#emails-view').append(newEmail);
       });
@@ -196,6 +223,7 @@ function load_mailbox(mailbox) {
 
     });
 }
+
 
 // Send Email from 'Compose' page
 function send_email(event) {
@@ -243,3 +271,4 @@ function single_email(sender, recipients, subject, timestamp, body) {
   document.querySelector('#email-timestamp').textContent = timestamp;
   document.querySelector('#email-body').textContent = body;
 }
+
